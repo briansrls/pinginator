@@ -264,11 +264,7 @@ def quiet_ping(dest_addr, stagger = 0, timeout = 2, count = 4, psize = 64):
 	print "%",
 	sys.stdout.flush()
 	print "\r",
-
-	#plt.plot(plist)
-	#plt.ylabel('Delay')
-	#plt.draw()
-	#plt.pause(stagger + .1)
+	
 	ax.plot(plist)
 	fig.canvas.flush_events()
 	time.sleep(stagger+.1)
