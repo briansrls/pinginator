@@ -96,6 +96,7 @@ import socket
 import struct
 import sys
 import time
+import matplotlib.pyplot as plt
 
 # From /usr/include/linux/icmp.h; your milage may vary.
 ICMP_ECHO_REQUEST = 8 # Seems to be the same on Solaris.
@@ -233,10 +234,10 @@ def verbose_ping(dest_addr, timeout = 2, count = 4, psize = 64):
     print
 
 
-def quiet_ping(dest_addr, timeout = 2, count = 4, psize = 64):
+def quiet_ping(dest_addr, stagger = 0, timeout = 2, count = 4, psize = 64):
     """
     Send `count' ping with `psize' size to `dest_addr' with
-    the given `timeout' and display the result.
+    the given `timeout' and display the result. Wait 'stagger' before sending each ping.
     Returns `percent' lost packages, `max' round trip time
     and `avrg' round trip time.
     """
@@ -244,6 +245,9 @@ def quiet_ping(dest_addr, timeout = 2, count = 4, psize = 64):
     artt = None
     lost = 0
     plist = []
+
+    plt.ion()
+    fig, ax = plt.subplots()
 
     for i in xrange(count):
         try:
@@ -255,16 +259,32 @@ def quiet_ping(dest_addr, timeout = 2, count = 4, psize = 64):
         if delay != None:
             delay = delay * 1000
             plist.append(delay)
+	print "Progress is ...... ",
+	print "%.2f" % ((float(i)/float(count))*100),
+	print "%",
+	sys.stdout.flush()
+	print "\r",
 
+	#plt.plot(plist)
+	#plt.ylabel('Delay')
+	#plt.draw()
+	#plt.pause(stagger + .1)
+	ax.plot(plist)
+	fig.canvas.flush_events()
+	time.sleep(stagger+.1)
+
+    
     # Find lost package percent
     percent_lost = 100 - (len(plist) * 100 / count)
+    
 
     # Find max and avg round trip time
     if plist:
         mrtt = max(plist)
         artt = sum(plist) / len(plist)
-
-    return percent_lost, mrtt, artt
+    plt.ioff()
+    plt.show
+    return 
 
 if __name__ == '__main__':
     verbose_ping("heise.de")
