@@ -234,20 +234,19 @@ def verbose_ping(dest_addr, timeout = 2, count = 4, psize = 64):
     print
 
 
-def quiet_ping(dest_addr, stagger = 0, timeout = 2, count = 4, psize = 64):
+#Arguments: ADDRESS, REALTIME PLOT, SEND DELAY, TIMEOUT (SECONDS), COUNT, PACKET-SIZE
+def quiet_ping(dest_addr, stagger = 0, realtime=1, timeout = 2, count = 4, psize = 64):
     """
     Send `count' ping with `psize' size to `dest_addr' with
     the given `timeout' and display the result. Wait 'stagger' before sending each ping.
     Returns `percent' lost packages, `max' round trip time
     and `avrg' round trip time.
     """
-    mrtt = None
-    artt = None
-    lost = 0
     plist = []
-
-    plt.ion()
-    fig, ax = plt.subplots()
+    if realtime:
+        plt.ion()
+        fig, ax = plt.subplots()
+        plt.ylabel('Delay (ms)')
 
     for i in xrange(count):
         try:
@@ -264,23 +263,19 @@ def quiet_ping(dest_addr, stagger = 0, timeout = 2, count = 4, psize = 64):
 	print "%",
 	sys.stdout.flush()
 	print "\r",
-	
-	ax.plot(plist)
-	fig.canvas.flush_events()
-	time.sleep(stagger+.1)
+	if (realtime and (i % (count/30) == 0)):	
+	    ax.plot(plist)
+	    fig.canvas.flush_events()
+	    time.sleep(stagger+.1)
 
     
     # Find lost package percent
     percent_lost = 100 - (len(plist) * 100 / count)
     
-
-    # Find max and avg round trip time
-    if plist:
-        mrtt = max(plist)
-        artt = sum(plist) / len(plist)
-    plt.ioff()
-    plt.show
-    return 
+    if realtime:
+        plt.ioff()
+        plt.show
+    return plist 
 
 if __name__ == '__main__':
     verbose_ping("heise.de")
